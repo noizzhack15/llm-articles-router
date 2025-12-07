@@ -33,6 +33,7 @@ Strict Rules:
   - "places"
 - The value of "desk_name" MUST be exactly: "Sports"
 - Do NOT output anything besides the JSON object.
+- Do NOT add any prefixes to the JSON object.
 - If you cannot recognize the article_domain, article_subdomain, region and palaces relevant to the article - use "UNKNOWN" in the appropriate field
 
 destinations:

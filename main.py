@@ -1,5 +1,6 @@
 import asyncio
 import os
+import uuid
 from glob import glob
 from typing import Any
 
@@ -9,12 +10,16 @@ from langchain.chat_models import init_chat_model
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda
+from pymongo import AsyncMongoClient
 
 from dtos.article import Article
+from enums.article_status import ArticleStatus
 
 load_dotenv()
 
 exchange = None
+
+client = AsyncMongoClient("mongodb://dev:qwer1234@localhost:27017/")
 
 
 async def init_rabbitmq():
@@ -34,7 +39,7 @@ model = init_chat_model("gpt-4.1-mini")
 new_article_message = """
         ##### news article to process #####
         - article_id: {article_id}
-        - id: {id}
+        - system_article_id: {system_article_id}
         - title: {title}
         - summary: {summary}
         - article_body: {article_body}
@@ -43,8 +48,34 @@ new_article_message = """
     """
 
 
-async def handle_articles(data: Any):
+async def handle_article_finished(data: dict):
     print(data)
+    agents_results = []
+
+    for key, agents_result in data.items():
+        if key == 'article':
+            continue
+
+        agents_results.append(agents_result)
+
+    await client['breaking_bed']['articles'].find_one_and_update(
+        {
+            "article_id": data['article']['article_id'],
+            "system_article_id": data['article']['system_article_id']
+        },
+        {
+            "$set": {
+                "state": ArticleStatus.FINISHED.name
+            }
+        })
+    return data
+
+
+async def handle_article_received(data: Any):
+    print('received data:')
+    print(data)
+    await client['breaking_bed']['articles'].insert_one(data)
+
     return data
 
 
@@ -75,13 +106,14 @@ async def send_article_to_queue(article_to_send: Article):
 async def main():
     result = await main_processing_chain.ainvoke(
         {
-            "article_id": "f35ad5c5-120a-489a-8031-dd521b576ec7",
-            "id": "f35ad5c5-120a-489a-8031-dd521b576ec7",
+            "article_id": str(uuid.uuid4()),
+            "system_article_id": str(uuid.uuid4()),
             "title": "Exciting Soccer Final in Madrid",
             "summary": "Real Madrid wins the thrilling UEFA Champions League final held in Madrid.",
             "article_body": "In an exhilarating UEFA Champions League final held in Madrid, Real Madrid claimed victory against Liverpool. The match, which took place at Santiago Bernabéu Stadium, saw standout performances from Karim Benzema and Vinícius Júnior, thrilling fans and securing the title for the Spanish giants.",
             "author": "Brittany Johnson",
-            "destination": "Norman Morgan"
+            "destination": "Norman Morgan",
+            "state": ArticleStatus.RECEIVED.name
         })
 
     print(result)
@@ -136,9 +168,10 @@ def init_llm_pipeline():
         **desks_llm_pipelines
     )
 
-    send_results = RunnableLambda(handle_articles)
+    handle_article_received_handler = RunnableLambda(handle_article_received)
+    handle_article_finished_handler = RunnableLambda(handle_article_finished)
 
-    result = parallel_processing_chain | send_results
+    result = handle_article_received_handler | parallel_processing_chain | handle_article_finished_handler
 
     return result
 
