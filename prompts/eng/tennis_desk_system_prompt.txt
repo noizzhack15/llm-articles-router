@@ -20,7 +20,7 @@ DeskDecision:
 }}
 
 Strict Rules:
-- You must base your decision ONLY on data in the Article object: title, summary, article_body, article_domain, article_subdomain, and places.
+- You must base your decision ONLY on data in the Article object: title, article_body, article_domain, article_subdomain, and places.
 - You must not invent or assume any information that is not present in the Article.
 - If the article does not clearly match your topic, you MUST return should_handle = false and explain why.
 - The JSON keys must be EXACTLY:
@@ -33,6 +33,7 @@ Strict Rules:
   - "places"
 - The value of "desk_name" MUST be exactly: "Tennis"
 - Do NOT output anything besides the JSON object.
+- Do NOT add any prefixes to the JSON object.
 - If you cannot recognize the article_domain, article_subdomain, region and palaces relevant to the article - use "UNKNOWN" in the appropriate field
 
 destinations:
