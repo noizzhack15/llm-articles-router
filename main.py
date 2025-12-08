@@ -31,7 +31,7 @@ async def start_rabbitmq():
         connection = await connect_robust(os.getenv("RABBITMQ_CONNECTION_STRING"))
         channel = await connection.channel()
         queue = await channel.declare_queue(
-            "breaking_bed_input",
+            "test",
             durable=True
         )
 
@@ -53,7 +53,7 @@ async def on_message(message: AbstractIncomingMessage):
                 "state": ArticleStatus.RECEIVED.name
             }
 
-            print(f"Received message: {message.body.decode()}")
+            print(f"Received message: {message_str}")
 
             await client['breaking_bed']['articles'].insert_one(data)
 
@@ -71,7 +71,6 @@ new_article_message = """
         - article_id: {article_id}
         - system_article_id: {system_article_id}
         - title: {title}
-        - summary: {summary}
         - article_body: {article_body}
         - author: {author}
         - destination: {destination}
@@ -119,22 +118,6 @@ async def handle_article_processing_started(data: Any):
         })
 
     return data
-
-
-async def main():
-    result = await main_processing_chain.ainvoke(
-        {
-            "article_id": str(uuid.uuid4()),
-            "system_article_id": str(uuid.uuid4()),
-            "title": "Exciting Soccer Final in Madrid",
-            "summary": "Real Madrid wins the thrilling UEFA Champions League final held in Madrid.",
-            "article_body": "In an exhilarating UEFA Champions League final held in Madrid, Real Madrid claimed victory against Liverpool. The match, which took place at Santiago Bernabéu Stadium, saw standout performances from Karim Benzema and Vinícius Júnior, thrilling fans and securing the title for the Spanish giants.",
-            "author": "Brittany Johnson",
-            "destination": "Norman Morgan",
-            "state": ArticleStatus.STARTED.name
-        })
-
-    print(result)
 
 
 def init_llm_pipeline_for_topic(desk_prompt: str):
