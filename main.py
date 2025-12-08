@@ -20,7 +20,7 @@ load_dotenv()
 
 exchange = None
 
-client = AsyncMongoClient("mongodb://dev:qwer1234@localhost:27017/")
+client = AsyncMongoClient("mongodb+srv://noizzhack15_db_user:ELM9TArINOJdqr1f@breakingbadcluster.ndyckke.mongodb.net/?appName=BreakingBadCluster")
 
 
 async def init_rabbitmq():
