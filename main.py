@@ -31,13 +31,12 @@ async def start_rabbitmq():
         connection = await connect_robust(os.getenv("RABBITMQ_CONNECTION_STRING"))
         channel = await connection.channel()
         queue = await channel.declare_queue(
-            "test",
+            "breaking_feed_queues",
             durable=True
         )
 
         await queue.consume(on_message)
-        asyncio.get_event_loop().run_forever()
-        x = 5465
+        await asyncio.Future()
 
 
 async def on_message(message: AbstractIncomingMessage):
@@ -72,8 +71,6 @@ new_article_message = """
         - system_article_id: {system_article_id}
         - title: {title}
         - article_body: {article_body}
-        - author: {author}
-        - destination: {destination}
     """
 
 
@@ -108,8 +105,8 @@ async def handle_article_processing_started(data: Any):
     print(data)
     await client['breaking_bed']['articles'].find_one_and_update(
         {
-            "article_id": data['article']['article_id'],
-            "system_article_id": data['article']['system_article_id']
+            "article_id": data['article_id'],
+            "system_article_id": data['system_article_id']
         },
         {
             "$set": {
