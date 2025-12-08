@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import uuid
 from glob import glob
@@ -56,7 +57,7 @@ async def handle_article_finished(data: dict):
         if key == 'article':
             continue
 
-        agents_results.append(agents_result)
+        agents_results.append(json.loads(agents_result))
 
     await client['breaking_bed']['articles'].find_one_and_update(
         {
@@ -65,9 +66,11 @@ async def handle_article_finished(data: dict):
         },
         {
             "$set": {
-                "state": ArticleStatus.FINISHED.name
+                "state": ArticleStatus.FINISHED.name,
+                "agents_results": agents_results
             }
         })
+
     return data
 
 
