@@ -1,11 +1,13 @@
 import asyncio
 import json
+import logging
 import os
 import uuid
 from glob import glob
 from typing import Any
 
-from aio_pika import connect_robust, Message, DeliveryMode
+from aio_pika import connect_robust
+from aio_pika.abc import AbstractIncomingMessage
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain_core.output_parsers import StrOutputParser
@@ -13,26 +15,53 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda
 from pymongo import AsyncMongoClient
 
-from dtos.article import Article
 from enums.article_status import ArticleStatus
 
 load_dotenv()
 
-exchange = None
+queue = None
 
-client = AsyncMongoClient("mongodb+srv://noizzhack15_db_user:ELM9TArINOJdqr1f@breakingbadcluster.ndyckke.mongodb.net/?appName=BreakingBadCluster")
+client = AsyncMongoClient(os.getenv("MONGO_CONNECTION_STRING"))
 
 
-async def init_rabbitmq():
-    global exchange
+async def start_rabbitmq():
+    global queue
 
-    if exchange is None:
-        connection = await connect_robust("amqp://guest:guest@localhost/breaking_bed")
+    if queue is None:
+        connection = await connect_robust(os.getenv("RABBITMQ_CONNECTION_STRING"))
         channel = await connection.channel()
-        exchange = await channel.declare_exchange(
-            "breaking_bed",
-            type="topic",
-            durable=True)
+        queue = await channel.declare_queue(
+            "breaking_bed_input",
+            durable=True
+        )
+
+        await queue.consume(on_message)
+        asyncio.get_event_loop().run_forever()
+        x = 5465
+
+
+async def on_message(message: AbstractIncomingMessage):
+    try:
+        async with message.process():  # Acknowledge the message upon successful processing
+            message_str = message.body.decode()
+
+            message_data = json.loads(message_str)
+
+            data = {
+                **message_data,
+                "system_article_id": str(uuid.uuid4()),
+                "state": ArticleStatus.RECEIVED.name
+            }
+
+            print(f"Received message: {message.body.decode()}")
+
+            await client['breaking_bed']['articles'].insert_one(data)
+
+            result = await main_processing_chain.ainvoke(data)
+
+            print(f"result: {result}")
+    except Exception as ex:
+        logging.getLogger().error(ex)
 
 
 model = init_chat_model("gpt-4.1-mini")
@@ -74,36 +103,22 @@ async def handle_article_finished(data: dict):
     return data
 
 
-async def handle_article_received(data: Any):
+async def handle_article_processing_started(data: Any):
     print('received data:')
+
     print(data)
-    await client['breaking_bed']['articles'].insert_one(data)
+    await client['breaking_bed']['articles'].find_one_and_update(
+        {
+            "article_id": data['article']['article_id'],
+            "system_article_id": data['article']['system_article_id']
+        },
+        {
+            "$set": {
+                "state": ArticleStatus.STARTED.name
+            }
+        })
 
     return data
-
-
-async def send_article_to_queue(article_to_send: Article):
-    """
-    send an article object to a queue
-    """
-    await init_rabbitmq()
-    print("\n--- Tool Execution: send_article_to_queue ---")
-    print(f"Article:\n {article_to_send.model_dump()}")
-    print("Sending article object to queue successful.")
-    print("------------------------------------------\n")
-
-    message = Message(
-        body=article_to_send.model_dump_json().encode(),
-        delivery_mode=DeliveryMode.PERSISTENT,  # Make the message durable
-        content_type='application/json'  # Inform consumers about content type
-    )
-
-    await exchange.publish(
-        message,
-        routing_key="test"
-    )
-
-    return "Article successfully sent to the queue."
 
 
 async def main():
@@ -116,7 +131,7 @@ async def main():
             "article_body": "In an exhilarating UEFA Champions League final held in Madrid, Real Madrid claimed victory against Liverpool. The match, which took place at Santiago Bernabéu Stadium, saw standout performances from Karim Benzema and Vinícius Júnior, thrilling fans and securing the title for the Spanish giants.",
             "author": "Brittany Johnson",
             "destination": "Norman Morgan",
-            "state": ArticleStatus.RECEIVED.name
+            "state": ArticleStatus.STARTED.name
         })
 
     print(result)
@@ -171,7 +186,7 @@ def init_llm_pipeline():
         **desks_llm_pipelines
     )
 
-    handle_article_received_handler = RunnableLambda(handle_article_received)
+    handle_article_received_handler = RunnableLambda(handle_article_processing_started)
     handle_article_finished_handler = RunnableLambda(handle_article_finished)
 
     result = handle_article_received_handler | parallel_processing_chain | handle_article_finished_handler
@@ -182,4 +197,4 @@ def init_llm_pipeline():
 main_processing_chain = init_llm_pipeline()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(start_rabbitmq(), debug=True)
