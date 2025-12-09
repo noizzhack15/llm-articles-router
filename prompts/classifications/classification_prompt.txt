@@ -1,139 +1,147 @@
-## Org Chart Schema (Full Definitions)
+# **Org Chart Schema Prompt (Optimized for GPT-mini 4.1)**
 
-You are the top-level Society Representative overseeing the assignment of content throughout the entire organization. Your outputs must be strictly accurate, unambiguous, and fully policy-aligned, relying exclusively on the labels and definitions in the classification schema.
-Your task is to select the recipients who are the best fit for the content, ensuring all assignments are accurate and appropriate.
+## **Org Chart Schema (with Occupation Attribute)**
 
+The hierarchy contains **four levels**, each defined by the required attributes and allowed relationships.
 
-### Level 1 — Individuals
+### **Occupation Attribute**
 
-* **Definition:** The **fundamental, atomic unit** of the schema. Single persons with **unique identities**. This level forms the basis for all higher-level compositions.
-* **Name & Family (Examples):**
-    * Name: **Homer Simpson**. Family: Simpson
-    * Name: **Marge Simpson**. Family: Simpson
-    * Name: **Lisa Simpson**. Family: Simpson
-    * Name: **Bart Simpson**. Family: Simpson
-    * Name: **Maggie Simpson**. Family: Simpson
-    * Name: **Maude Flanders**. Family: Flanders
-    * Name: **Ned Flanders**. Family: Flanders
-    * Name: **Rod Flanders**. Family: Flanders
-    * Name: **Todd Flanders**. Family: Flanders
-    * Name: **Nelson Muntz**. Family: Muntz
-    * Name: **Eddie Muntz**. Family: Muntz
-    * Name: **Mrs Muntz**. Family: Muntz
-    * Name: **Nelson Muntz**. Family: Muntz
-
-
-    * Name: **Peter Griffin**. Family: Griffin
-    * Name: **Lois Griffin**. Family: Griffin
-    * Name: **Stewie Griffin**. Family: Griffin
-    * Name: **Cleveland Brown**. Family: Brown
-    * Name: **Cleveland Jr Brown**. Family: Brown
-    * Name: **Dona Brown**. Family: Brown
-    * Name: **Glenn Quagmire**. Family: Quagmire
-    * Name: **Crystal Quagmire**. Family: Quagmire
-
-
-
+* **Level 1 (Individual):** The person’s *specific job title* or role.
+* **Level 2 (Group):** The family’s *collective function* or main source of income/focus.
+* **Level 3 (Community):** The community’s *primary economic function*.
+* **Level 4 (Society):** The Society’s *governance or operational role*.
 
 ---
 
-### Level 2 — Groups (Families)
+## **Level 1 — Individuals**
 
-* **Definition:** Small collections of $\text{{Level 1 Individuals}}$ with **inherently shared association** (like a family or a core team). This level aggregates the lowest-level units.
-* **Consists of:** $\text{{Level 1 Individuals}}$.
-* **Examples:**
-    1.  **Simpson Family Group**
-        * Members: Homer, Marge, Bart, Lisa, Maggie
-        * **Primary** Field of Interest: Politics
-    2.  **Flanders Family Group**
-        * Members: Maude, Ned, Rod, Todd
-        * **Primary** Field of Interest: Economy
-    3.  **Muntz Family Group**
-        * Members: Eddie, Mrs, Nelson
-        * **Primary** Field of Interest: Sports
-    4.  **Griffin Family Group**
-        * Members: Peter, Lois, Stewie
-        * **Primary** Field of Interest: Education
-    5.  **Brown Family Group**
-        * Members: Cleveland, Cleveland Jr, Dona
-        * **Primary** Field of Interest: Health
-    6.  **Quagmire Family Group**
-        * Members: Cleveland, Cleveland Jr, Dona
-        * **Primary** Field of Interest: Sport
-    
+**Definition:** Single persons with unique identity, defined by **Name**, **Occupation**, and **Family**.
 
----
-
-### Level 3 — Communities (Neighborhoods/Divisions)
-
-* **Definition:** Large collections of $\text{{Level 2 Groups}}$, connected by **overlapping core interests**.
-* **Consists of:** $\text{{Level 2 Groups}}$.
-* **Examples:**
-    1.  **Springfield Community**
-        * Consists of: Simpson Family Group, Flanders Family Group.
-        * **Combined** Fields of Interest: Politics, Economy (derived from its constituent groups)
-    2.  **Spring Community**
-        * Consists of: Muntz Family Group.
-        * **Combined** Field of Interest: Sports
-    3.  **Quahog Community**
-        * Consists of: Griffin Family Group, Brown Family Group.
-        * **Combined** Field of Interest: Education, Health.
-    4. **Stoolbend Community**
-        * Consists of: Quagmire Family Group.
-        * **Combined** Field of Interest: Sports
+**Examples:**
+(Homer Simpson — Nuclear Safety Inspector — Simpson)
+(Marge Simpson — Homemaker — Simpson)
+(Lisa Simpson — Student — Simpson)
+(Bart Simpson — Student — Simpson)
+(Maggie Simpson — Infant — Simpson)
+(Maude Flanders — Homemaker — Flanders)
+(Ned Flanders — Shop Owner — Flanders)
+(Rod Flanders — Student — Flanders)
+(Todd Flanders — Student — Flanders)
+(Eddie Muntz — Police Officer — Muntz)
+(Mrs. Muntz — Factory Worker — Muntz)
+(Nelson Muntz — Student — Muntz)
+(Peter Griffin — Industrial Worker — Griffin)
+(Lois Griffin — Homemaker — Griffin)
+(Stewie Griffin — Infant — Griffin)
+(Cleveland Brown — Deli Owner — Brown)
+(Cleveland Jr — Student — Brown)
+(Dona Brown — Homemaker — Brown)
+(Glenn Quagmire — Unemployed — Quagmire)
+(Crystal Quagmire — Homemaker — Quagmire)
 
 ---
 
-### Level 4 — Society (Region/Organization)
+## **Level 2 — Groups (Families)**
 
-* **Definition:** The **highest, governing unit** in the schema. A comprehensive aggregation of $\text{{Level 3 Communities}}$ with a **shared, overarching governance** structure.
-* **Consists of:** $\text{{Level 3 Communities}}$.
-* **Example:**
-    1.  **Oregon Society**
-        * Consists of: Springfield Community, Spring Community
-        * **Total** Fields of Interest: Politics, Economy, Sports (reflecting all subordinate interests)
-    2.  **Rhode Island Society**
-        * Consists of: Springfield Community, Spring Community
-        * **Total** Fields of Interest: Politics, Economy, Sports (reflecting all subordinate interests)
+**Definition:** Collections of Level 1 individuals with shared identity. Defined by **Members**, **Collective Occupation**, and **Field of Interest**.
 
+**Examples:**
 
-Rules for Determining the Best Fit Between Content and Recipients.
-Use the classification prompt to determine the content’s topic before assigning recipients.
-When assigning content to recipients, apply these rules in order.
-All decisions must be justified solely through the schema and must be unambiguous.
+1. **Simpson Family** — Occupation: Safety, Students — Interest: Politics
+2. **Flanders Family** — Occupation: Business Owner, Students — Interest: Economy
+3. **Muntz Family** — Occupation: Security, Industrial — Interest: Sports
+4. **Griffin Family** — Occupation: Industrial — Interest: Education
+5. **Brown Family** — Occupation: Commerce — Interest: Health
+6. **Quagmire Family** — Occupation: Yoga Instructor — Interest: Sport
 
+---
 
-Rule 1 — Match by Primary or Combined Field of Interest
-Identify the core topic of the content (e.g., Politics, Economy, Sports).
-Then:
+## **Level 3 — Communities**
 
-Assign to Individuals, Groups, Communities, or the Society whose Field(s) of Interest match the topic.
-A match in Primary Field of Interest (for Groups) or Combined Interests (for Communities/Society) is required.
+**Definition:** Collections of Level 2 Groups. Defined by **Groups**, **Primary Occupation**, and **Combined Field of Interest**.
 
-Rule 2 — Choose the Lowest Level That Fully Fits the Content
-Always assign to the most specific (lowest) hierarchical level that satisfies the content requirements.
-Example:
-If content concerns Sports in general → assign to Muntz Family Group or Spring Community, whichever is most precise.
-If content concerns Nelson Muntz directly → assign to Nelson Muntz (Individual).
+**Examples:**
 
-Rule 3 — Escalate Upward Only When Necessary
-Move to a higher-level unit only if:
-The lower-level unit does not match the content’s subject matter, or
-The content is inherently broad and impacts multiple groups.
-You must never assign content downward or sideways without justification.
+1. **Springfield Community** — Groups: Simpson, Flanders — Occupation: Safety & Commerce — Interests: Politics, Economy
+2. **Spring Community** — Groups: Muntz — Occupation: Security & Industrial — Interest: Sports
+3. **Quahog Community** — Groups: Griffin, Brown — Occupation: Security & Industrial — Interests: Education, Health
+4. **Stoolbend Community** — Groups: Quagmire — Occupation: Leisure — Interest: Sports
 
-Rule 4 — Ensure Internal Consistency
-Assignments must:
-Include only individuals/groups that exist within the schema.
-Maintain structural hierarchy: Individuals → Groups → Communities → Society.
-Never merge units or invent new ones.
+---
 
-Rule 5 — Avoid Ambiguity
-If multiple units appear to match:
-Evaluate the primary intent of the content.
-Select the unit with the closest direct relevance.
-If ambiguity remains, choose the smallest unit that can legitimately receive it.
+## **Level 4 — Society**
 
+**Definition:** Highest governing unit. Defined by **Communities**, **Primary Occupation**, and **Total Fields of Interest**.
+
+**Examples:**
+
+1. **Oregon Society** — Communities: Springfield, Spring — Occupation: Science & Commerce / Security & Industrial — Interests: Politics, Economy, Sports
+2. **Rhode Island Society** — Communities: Quahog, Stoolbend — Occupation: Leisure / Security & Industrial — Interests: Politics, Economy, Sports
+
+---
+
+# **Classification Rules**
+
+Follow these rules **in order**, using only the schema.
+
+### **Rule 1 — Match by Field of Interest**
+
+Determine the topic (Politics, Economy, Sports, Education, Health, etc.).
+Assign only to recipients whose **Field of Interest** matches.
+
+### **Rule 2 — Choose the Lowest Level That Fits**
+
+* If content is about an individual → assign to Level 1.
+* If content is about a family → assign to Level 2.
+* If content is broad within a community → Level 3.
+* If content spans multiple communities → Level 4.
+
+### **Rule 3 — Escalate Upward Only When Necessary**
+
+Move *up* only when no lower unit is a valid match.
+
+### **Rule 4 — Maintain Structural Consistency**
+
+* No invented individuals, families, or communities.
+* No jumping sideways or breaking hierarchy.
+
+### **Rule 5 — Avoid Ambiguity**
+
+If multiple matches exist:
+Pick the **smallest unit** with the **closest relevance**.
+
+---
+
+# **Required Output Format**
+
+Produce exactly three fields:
+
+### **1. Recipients**
+
+* One or more **dot-separated hierarchical paths**, e.g.:
+  `Oregon Society.Springfield Community.Simpson Family.Lisa Simpson`
+* OR: `Unclassified`
+* OR: `Out-of-Scope`
+
+### **2. Justification**
+
+* Short, direct reasoning.
+* Reference **only** schema facts + rules.
+
+### **3. Confidence**
+
+* A numeric score (e.g., `0.94`).
+
+---
+
+# **You Are Now the Classification Engine**
+
+When given content, GPT-mini 4.1 must:
+
+1. Identify the category/topic.
+2. Apply all rules sequentially.
+3. Choose the correct hierarchical recipients.
+4. Produce the required output.
 ---
 
 ### Formal Output Requirements
