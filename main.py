@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import uuid
-from glob import glob
 from typing import Any
 
 from aio_pika import connect_robust
@@ -41,24 +40,24 @@ async def start_rabbitmq():
 
 async def on_message(message: AbstractIncomingMessage):
     try:
-        # async with message.process():  # Acknowledge the message upon successful processing
-        message_str = message.body.decode()
+        async with message.process():  # Acknowledge the message upon successful processing
+            message_str = message.body.decode()
 
-        message_data = json.loads(message_str)
+            message_data = json.loads(message_str)
 
-        data = {
-            **message_data,
-            "system_article_id": str(uuid.uuid4()),
-            "state": ArticleStatus.RECEIVED.name
-        }
+            data = {
+                **message_data,
+                "system_article_id": str(uuid.uuid4()),
+                "state": ArticleStatus.RECEIVED.name
+            }
 
-        print(f"Received message: {message_str}")
+            print(f"Received message: {message_str}")
 
-        await client['breaking_bed']['articles1'].insert_one(data)
+            await client['breaking_bed']['articles'].insert_one(data)
 
-        result = await main_processing_chain.ainvoke(data)
+            result = await main_processing_chain.ainvoke(data)
 
-        print(f"result: {result}")
+            print(f"result: {result}")
     except Exception as ex:
         logging.getLogger().error(ex)
 
@@ -81,29 +80,19 @@ new_base_classification_message = """
     """
 
 
-async def debug(data: dict):
-    return data
-
-
 async def handle_article_finished(data: dict):
     print(data)
 
-    agents_results = []
-    for key, agents_result in data.items():
-        if key == 'article':
-            continue
-
-        agents_results.append(agents_result)
-
-    await client['breaking_bed']['articles1'].find_one_and_update(
+    await client['breaking_bed']['articles'].find_one_and_update(
         {
-            "article_id": data['article']['article_id'],
-            "system_article_id": data['article']['system_article_id']
+            "article_id": data['article']['article']['article_id'],
+            "system_article_id": data['article']['article']['system_article_id']
         },
         {
             "$set": {
-                "state": ArticleStatus.FINISHED.name,
-                "agents_results": agents_results
+                "state": ArticleStatus.AGENTS_FINISHED.name,
+                "classification": json.loads(data["classification"]),
+                "base_classification": data["base_classification"]["base_classification"]
             }
         })
 
@@ -182,36 +171,22 @@ def init_llm_pipeline_for_classification():
     )
 
     classification_processing_started_handler = RunnableLambda(handle_classification_processing_started)
-    de = RunnableLambda(debug)
 
     str_output_parser = StrOutputParser()
 
     parallel_processing_chain = RunnableParallel(
         classification=classification_processing_started_handler | base_classification_prompt_template | model | str_output_parser,
-        article=RunnablePassthrough()
+        article=RunnablePassthrough(),
+        base_classification=RunnablePassthrough()
     )
 
-    return de | parallel_processing_chain | de
+    return parallel_processing_chain
 
 
 def init_llm_pipeline():
-    prompt_files = glob(r"C:\code_projects\llm-articles-router\prompts\eng\*.txt")
-
     desks_llm_pipelines: dict[str, Any] = {
         "article": RunnablePassthrough()
     }
-
-    # for prompt_file in prompt_files:
-    #     desk_topic = os.path.basename(prompt_file).split('_')[0]
-    #
-    #     with open(
-    #             prompt_file,
-    #             'r',
-    #             encoding='utf-8') as file:
-    #         desk_prompt = file.read()
-    #
-    #         llm_pipeline_for_topic = init_llm_pipeline_for_topic(desk_prompt)
-    #         desks_llm_pipelines[f'{desk_topic}_desk'] = llm_pipeline_for_topic
 
     llm_pipeline_for_base_classification = init_llm_pipeline_for_base_classification()
     llm_pipeline_for_classification = init_llm_pipeline_for_classification()
