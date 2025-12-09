@@ -50,7 +50,7 @@ async def on_message(message: AbstractIncomingMessage):
 
             data = {
                 **message_data,
-                " system_article_id": str(uuid.uuid4()),
+                "system_article_id": str(uuid.uuid4()),
                 "state": ArticleStatus.RECEIVED.name
             }
 
