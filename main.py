@@ -88,7 +88,8 @@ async def handle_guardrails_finished(data: dict):
 
 
 async def handle_guardrails_finished_successfully(data: dict):
-    return json.dumps(data['article'])
+    del data["article"]["_id"]
+    return data['article']
 
 
 async def handle_article_finished(data: dict):
@@ -160,6 +161,10 @@ def init_llm_guardrails_pipline():
     ) | handle_guardrails_finished_handler
 
 
+def check_violates_privacy_regulations(data: dict):
+    return not data["guardrails_result"]["violates_privacy_regulations"]
+
+
 def init_llm_pipeline():
     prompt_files = glob(r"C:\code_projects\llm-articles-router\prompts\eng\*.txt")
 
@@ -191,7 +196,7 @@ def init_llm_pipeline():
     message_passed_guardrails_pipeline = handle_guardrails_finished_successfully_handler | parallel_processing_chain | handle_article_finished_handler
 
     branch = RunnableBranch(
-        (lambda data: data["guardrails_result"]["violates_privacy_regulations"], message_passed_guardrails_pipeline),
+        (check_violates_privacy_regulations, message_passed_guardrails_pipeline),
         handle_article_finished_handler
     )
 
