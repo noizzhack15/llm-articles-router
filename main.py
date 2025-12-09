@@ -10,7 +10,7 @@ from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda
 from pymongo import AsyncMongoClient
@@ -31,7 +31,7 @@ async def start_rabbitmq():
         connection = await connect_robust(os.getenv("RABBITMQ_CONNECTION_STRING"))
         channel = await connection.channel()
         queue = await channel.declare_queue(
-            "breaking_feed_queues",
+            "test",
             durable=True
         )
 
@@ -41,24 +41,24 @@ async def start_rabbitmq():
 
 async def on_message(message: AbstractIncomingMessage):
     try:
-        async with message.process():  # Acknowledge the message upon successful processing
-            message_str = message.body.decode()
+        # async with message.process():  # Acknowledge the message upon successful processing
+        message_str = message.body.decode()
 
-            message_data = json.loads(message_str)
+        message_data = json.loads(message_str)
 
-            data = {
-                **message_data,
-                "system_article_id": str(uuid.uuid4()),
-                "state": ArticleStatus.RECEIVED.name
-            }
+        data = {
+            **message_data,
+            "system_article_id": str(uuid.uuid4()),
+            "state": ArticleStatus.RECEIVED.name
+        }
 
-            print(f"Received message: {message_str}")
+        print(f"Received message: {message_str}")
 
-            await client['breaking_bed']['articles'].insert_one(data)
+        await client['breaking_bed']['articles1'].insert_one(data)
 
-            result = await main_processing_chain.ainvoke(data)
+        result = await main_processing_chain.ainvoke(data)
 
-            print(f"result: {result}")
+        print(f"result: {result}")
     except Exception as ex:
         logging.getLogger().error(ex)
 
@@ -82,9 +82,9 @@ async def handle_article_finished(data: dict):
         if key == 'article':
             continue
 
-        agents_results.append(json.loads(agents_result))
+        agents_results.append(agents_result)
 
-    await client['breaking_bed']['articles'].find_one_and_update(
+    await client['breaking_bed']['articles1'].find_one_and_update(
         {
             "article_id": data['article']['article_id'],
             "system_article_id": data['article']['system_article_id']
@@ -103,7 +103,7 @@ async def handle_article_processing_started(data: Any):
     print('received data:')
     print(data)
 
-    await client['breaking_bed']['articles'].find_one_and_update(
+    await client['breaking_bed']['articles1'].find_one_and_update(
         {
             "article_id": data['article_id'],
             "system_article_id": data['system_article_id']
@@ -128,6 +128,25 @@ def init_llm_pipeline_for_topic(desk_prompt: str):
     str_output_parser = StrOutputParser()
 
     return desk_prompt_template | model | str_output_parser
+
+
+def init_llm_pipeline_for_base_classification():
+    with open(
+            r'C:\code_projects\llm-articles-router\prompts\classifications\base_classification_prompt.txt',
+            'r',
+            encoding='utf-8') as file:
+        base_classification_prompt = file.read()
+
+    desk_prompt_template = ChatPromptTemplate.from_messages(
+        [
+            ("system", base_classification_prompt),
+            ("human", new_article_message)
+        ]
+    )
+
+    json_output_parser = JsonOutputParser()
+
+    return desk_prompt_template | model | json_output_parser
 
 
 def init_llm_pipeline_for_classifier():
@@ -156,18 +175,20 @@ def init_llm_pipeline():
         "article": RunnablePassthrough()
     }
 
-    for prompt_file in prompt_files:
-        desk_topic = os.path.basename(prompt_file).split('_')[0]
+    # for prompt_file in prompt_files:
+    #     desk_topic = os.path.basename(prompt_file).split('_')[0]
+    #
+    #     with open(
+    #             prompt_file,
+    #             'r',
+    #             encoding='utf-8') as file:
+    #         desk_prompt = file.read()
+    #
+    #         llm_pipeline_for_topic = init_llm_pipeline_for_topic(desk_prompt)
+    #         desks_llm_pipelines[f'{desk_topic}_desk'] = llm_pipeline_for_topic
 
-        with open(
-                prompt_file,
-                'r',
-                encoding='utf-8') as file:
-            desk_prompt = file.read()
-
-            llm_pipeline_for_topic = init_llm_pipeline_for_topic(desk_prompt)
-            desks_llm_pipelines[f'{desk_topic}_desk'] = llm_pipeline_for_topic
-
+    llm_pipeline_for_base_classification = init_llm_pipeline_for_base_classification()
+    desks_llm_pipelines['base_classification'] = llm_pipeline_for_base_classification
     parallel_processing_chain = RunnableParallel(
         **desks_llm_pipelines
     )
