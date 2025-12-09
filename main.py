@@ -102,7 +102,7 @@ async def handle_article_finished(data: dict):
 async def handle_article_processing_started(data: Any):
     print('received data:')
     print(data)
-    
+
     await client['breaking_bed']['articles'].find_one_and_update(
         {
             "article_id": data['article_id'],
@@ -121,6 +121,25 @@ def init_llm_pipeline_for_topic(desk_prompt: str):
     desk_prompt_template = ChatPromptTemplate.from_messages(
         [
             ("system", desk_prompt),
+            ("human", new_article_message)
+        ]
+    )
+
+    str_output_parser = StrOutputParser()
+
+    return desk_prompt_template | model | str_output_parser
+
+
+def init_llm_pipeline_for_classifier():
+    with open(
+            r'C:\code_projects\llm-articles-router\prompts\classifications\classification_prompt.txt',
+            'r',
+            encoding='utf-8') as file:
+        classification_prompt = file.read()
+
+    desk_prompt_template = ChatPromptTemplate.from_messages(
+        [
+            ("system", classification_prompt),
             ("human", new_article_message)
         ]
     )
