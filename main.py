@@ -10,9 +10,9 @@ from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda
+from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda, RunnableBranch
 from pymongo import AsyncMongoClient
 
 from enums.article_status import ArticleStatus
@@ -22,6 +22,8 @@ load_dotenv()
 queue = None
 
 client = AsyncMongoClient(os.getenv("MONGO_CONNECTION_STRING"))
+str_output_parser = StrOutputParser()
+json_output_parser = JsonOutputParser()
 
 
 async def start_rabbitmq():
@@ -31,7 +33,7 @@ async def start_rabbitmq():
         connection = await connect_robust(os.getenv("RABBITMQ_CONNECTION_STRING"))
         channel = await connection.channel()
         queue = await channel.declare_queue(
-            "breaking_feed_queues",
+            "test",
             durable=True
         )
 
@@ -41,24 +43,24 @@ async def start_rabbitmq():
 
 async def on_message(message: AbstractIncomingMessage):
     try:
-        async with message.process():  # Acknowledge the message upon successful processing
-            message_str = message.body.decode()
+        # async with message.process():  # Acknowledge the message upon successful processing
+        message_str = message.body.decode()
 
-            message_data = json.loads(message_str)
+        message_data = json.loads(message_str)
 
-            data = {
-                **message_data,
-                "system_article_id": str(uuid.uuid4()),
-                "state": ArticleStatus.RECEIVED.name
-            }
+        data = {
+            **message_data,
+            "system_article_id": str(uuid.uuid4()),
+            "state": ArticleStatus.RECEIVED.name
+        }
 
-            print(f"Received message: {message_str}")
+        print(f"Received message: {message_str}")
 
-            await client['breaking_bed']['articles'].insert_one(data)
+        await client['breaking_bed']['articles'].insert_one(data)
 
-            result = await main_processing_chain.ainvoke(data)
+        result = await main_processing_chain.ainvoke(data)
 
-            print(f"result: {result}")
+        print(f"result: {result}")
     except Exception as ex:
         logging.getLogger().error(ex)
 
@@ -72,6 +74,21 @@ new_article_message = """
         - title: {title}
         - article_body: {article_body}
     """
+
+
+async def debugger(data: dict):
+    return data
+
+
+debugger_handler = RunnableLambda(debugger)
+
+
+async def handle_guardrails_finished(data: dict):
+    return data
+
+
+async def handle_guardrails_finished_successfully(data: dict):
+    return json.dumps(data['article'])
 
 
 async def handle_article_finished(data: dict):
@@ -101,8 +118,8 @@ async def handle_article_finished(data: dict):
 
 async def handle_article_processing_started(data: Any):
     print('received data:')
-
     print(data)
+
     await client['breaking_bed']['articles'].find_one_and_update(
         {
             "article_id": data['article_id'],
@@ -117,30 +134,30 @@ async def handle_article_processing_started(data: Any):
     return data
 
 
-def init_llm_pipeline_for_topic(desk_prompt: str):
-    desk_prompt_template = ChatPromptTemplate.from_messages(
+def init_llm_guardrails_pipline():
+    with open(
+            r"C:\code_projects\llm-articles-router\prompts\guardrails\privacy_inspection_prompt.txt",
+            'r',
+            encoding='utf-8') as file:
+        guardrails_prompt = file.read()
+
+    guardrails_prompt_template = ChatPromptTemplate.from_messages(
         [
-            ("system", desk_prompt),
+            ("system", guardrails_prompt),
             ("human", new_article_message)
         ]
     )
 
-    str_output_parser = StrOutputParser()
+    handle_guardrails_finished_handler = RunnableLambda(handle_guardrails_finished)
 
-    return desk_prompt_template | model | str_output_parser
+    guardrails_llm_pipelines: dict[str, Any] = {
+        "article": RunnablePassthrough(),
+        "guardrails_result": guardrails_prompt_template | model | json_output_parser
+    }
 
-
-def init_llm_pipeline_for_classification(desk_prompt: str):
-    desk_prompt_template = ChatPromptTemplate.from_messages(
-        [
-            ("system", desk_prompt),
-            ("human", new_article_message)
-        ]
-    )
-
-    str_output_parser = StrOutputParser()
-
-    return desk_prompt_template | model | str_output_parser
+    return RunnableParallel(
+        guardrails_llm_pipelines
+    ) | handle_guardrails_finished_handler
 
 
 def init_llm_pipeline():
@@ -168,10 +185,32 @@ def init_llm_pipeline():
 
     handle_article_received_handler = RunnableLambda(handle_article_processing_started)
     handle_article_finished_handler = RunnableLambda(handle_article_finished)
+    handle_guardrails_finished_successfully_handler = RunnableLambda(handle_guardrails_finished_successfully)
 
-    result = handle_article_received_handler | parallel_processing_chain | handle_article_finished_handler
+    guardrails_pipeline = init_llm_guardrails_pipline()
+    message_passed_guardrails_pipeline = handle_guardrails_finished_successfully_handler | parallel_processing_chain | handle_article_finished_handler
+
+    branch = RunnableBranch(
+        (lambda data: data["guardrails_result"]["violates_privacy_regulations"], message_passed_guardrails_pipeline),
+        handle_article_finished_handler
+    )
+
+    result = (handle_article_received_handler |
+              guardrails_pipeline |
+              branch)
 
     return result
+
+
+def init_llm_pipeline_for_topic(desk_prompt: str):
+    desk_prompt_template = ChatPromptTemplate.from_messages(
+        [
+            ("system", desk_prompt),
+            ("human", new_article_message)
+        ]
+    )
+
+    return debugger_handler | desk_prompt_template | model | str_output_parser
 
 
 main_processing_chain = init_llm_pipeline()
