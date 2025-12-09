@@ -138,10 +138,10 @@ If ambiguity remains, choose the smallest unit that can legitimately receive it.
 
 ### Formal Output Requirements
 
-Your final output must contain three parts:
+Your final output MUST be in json with three fields:
+{{
+    "recipients": "recipients", // The final recipient(s) as a full, dot-separated hierarchical path, or **Unclassified** or **Out-of-Scope**.
+    "justification": "Justification", // A short, concise reasoning referencing **ONLY** textual evidence and fit rules.
+    "confidence": confidence // A score reflecting how well the input matches the level definition (e.g., `0.95`).
+}}
 
-| Field | Requirement |
-| :--- | :--- |
-| **Recipients** | The final recipient(s) as a full, dot-separated hierarchical path, or **Unclassified** or **Out-of-Scope**. |
-| **Justification** | A short, concise reasoning referencing **ONLY** textual evidence and fit rules. |
-| **Confidence** | A score reflecting how well the input matches the level definition (e.g., `0.95`). |
