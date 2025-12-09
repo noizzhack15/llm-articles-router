@@ -31,7 +31,7 @@ async def start_rabbitmq():
         connection = await connect_robust(os.getenv("RABBITMQ_CONNECTION_STRING"))
         channel = await connection.channel()
         queue = await channel.declare_queue(
-            "breaking_feed_queues",
+            "test",
             durable=True
         )
 
@@ -41,24 +41,24 @@ async def start_rabbitmq():
 
 async def on_message(message: AbstractIncomingMessage):
     try:
-        async with message.process():  # Acknowledge the message upon successful processing
-            message_str = message.body.decode()
+        # async with message.process():  # Acknowledge the message upon successful processing
+        message_str = message.body.decode()
 
-            message_data = json.loads(message_str)
+        message_data = json.loads(message_str)
 
-            data = {
-                **message_data,
-                "system_article_id": str(uuid.uuid4()),
-                "state": ArticleStatus.RECEIVED.name
-            }
+        data = {
+            **message_data,
+            "system_article_id": str(uuid.uuid4()),
+            "state": ArticleStatus.RECEIVED.name
+        }
 
-            print(f"Received message: {message_str}")
+        print(f"Received message: {message_str}")
 
-            await client['breaking_bed']['articles'].insert_one(data)
+        await client['breaking_bed']['articles1'].insert_one(data)
 
-            result = await main_processing_chain.ainvoke(data)
+        result = await main_processing_chain.ainvoke(data)
 
-            print(f"result: {result}")
+        print(f"result: {result}")
     except Exception as ex:
         logging.getLogger().error(ex)
 
@@ -81,6 +81,10 @@ new_base_classification_message = """
     """
 
 
+async def debug(data: dict):
+    return data
+
+
 async def handle_article_finished(data: dict):
     print(data)
 
@@ -91,7 +95,7 @@ async def handle_article_finished(data: dict):
 
         agents_results.append(agents_result)
 
-    await client['breaking_bed']['articles'].find_one_and_update(
+    await client['breaking_bed']['articles1'].find_one_and_update(
         {
             "article_id": data['article']['article_id'],
             "system_article_id": data['article']['system_article_id']
@@ -107,7 +111,10 @@ async def handle_article_finished(data: dict):
 
 
 async def handle_classification_processing_started(data: Any):
-    return data['base_classification']
+    return {
+        **data['base_classification'],
+        **data['article']
+    }
 
 
 async def handle_article_processing_started(data: Any):
@@ -175,10 +182,16 @@ def init_llm_pipeline_for_classification():
     )
 
     classification_processing_started_handler = RunnableLambda(handle_classification_processing_started)
+    de = RunnableLambda(debug)
 
     str_output_parser = StrOutputParser()
 
-    return classification_processing_started_handler | base_classification_prompt_template | model | str_output_parser
+    parallel_processing_chain = RunnableParallel(
+        classification=classification_processing_started_handler | base_classification_prompt_template | model | str_output_parser,
+        article=RunnablePassthrough()
+    )
+
+    return de | parallel_processing_chain | de
 
 
 def init_llm_pipeline():
