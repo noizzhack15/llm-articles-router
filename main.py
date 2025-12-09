@@ -30,7 +30,7 @@ async def start_rabbitmq():
         connection = await connect_robust(os.getenv("RABBITMQ_CONNECTION_STRING"))
         channel = await connection.channel()
         queue = await channel.declare_queue(
-            "test",
+            "Gnews",
             durable=True
         )
 
@@ -139,7 +139,7 @@ def init_llm_pipeline_for_topic(desk_prompt: str):
 
 def init_llm_pipeline_for_base_classification():
     with open(
-            r'C:\code_projects\llm-articles-router\prompts\classifications\base_classification_prompt.txt',
+            r'C:\workspace\ArticlesRouter\llm-articles-router\prompts\classifications\base_classification_prompt.txt',
             'r',
             encoding='utf-8') as file:
         base_classification_prompt = file.read()
@@ -158,7 +158,7 @@ def init_llm_pipeline_for_base_classification():
 
 def init_llm_pipeline_for_classification():
     with open(
-            r'C:\code_projects\llm-articles-router\prompts\classifications\classification_prompt.txt',
+            r'C:\workspace\ArticlesRouter\llm-articles-router\prompts\classifications\classification_prompt.txt',
             'r',
             encoding='utf-8') as file:
         base_classification_prompt = file.read()
