@@ -80,13 +80,6 @@ async def debugger(data: dict):
     return data
 
 
-debugger_handler = RunnableLambda(debugger)
-
-
-async def handle_guardrails_finished(data: dict):
-    return data
-
-
 async def handle_guardrails_finished_successfully(data: dict):
     del data["article"]["_id"]
     return data['article']
@@ -97,10 +90,15 @@ async def handle_article_finished(data: dict):
     agents_results = []
 
     for key, agents_result in data.items():
-        if key == 'article':
+        if key == "article" or key == "guardrails_result":
             continue
 
         agents_results.append(json.loads(agents_result))
+
+    if data["guardrails_result"]["violates_privacy_regulations"]:
+        article_status = ArticleStatus.FINISHED.name
+    else:
+        article_status = ArticleStatus.NOT_PASSED_PRIVACY_CHECKS.name
 
     await client['breaking_bed']['articles'].find_one_and_update(
         {
@@ -109,7 +107,7 @@ async def handle_article_finished(data: dict):
         },
         {
             "$set": {
-                "state": ArticleStatus.FINISHED.name,
+                "state": article_status,
                 "agents_results": agents_results
             }
         })
@@ -149,8 +147,6 @@ def init_llm_guardrails_pipline():
         ]
     )
 
-    handle_guardrails_finished_handler = RunnableLambda(handle_guardrails_finished)
-
     guardrails_llm_pipelines: dict[str, Any] = {
         "article": RunnablePassthrough(),
         "guardrails_result": guardrails_prompt_template | model | json_output_parser
@@ -158,7 +154,7 @@ def init_llm_guardrails_pipline():
 
     return RunnableParallel(
         guardrails_llm_pipelines
-    ) | handle_guardrails_finished_handler
+    )
 
 
 def check_violates_privacy_regulations(data: dict):
@@ -215,7 +211,7 @@ def init_llm_pipeline_for_topic(desk_prompt: str):
         ]
     )
 
-    return debugger_handler | desk_prompt_template | model | str_output_parser
+    return desk_prompt_template | model | str_output_parser
 
 
 main_processing_chain = init_llm_pipeline()
