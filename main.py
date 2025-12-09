@@ -73,6 +73,13 @@ new_article_message = """
         - article_body: {article_body}
     """
 
+new_base_classification_message = """
+        ##### news classification to process #####
+        - classification: {classification}
+        - justification: {justification}
+        - confidence: {confidence}
+    """
+
 
 async def handle_article_finished(data: dict):
     print(data)
@@ -97,6 +104,10 @@ async def handle_article_finished(data: dict):
         })
 
     return data
+
+
+async def handle_classification_processing_started(data: Any):
+    return data['base_classification']
 
 
 async def handle_article_processing_started(data: Any):
@@ -137,7 +148,7 @@ def init_llm_pipeline_for_base_classification():
             encoding='utf-8') as file:
         base_classification_prompt = file.read()
 
-    desk_prompt_template = ChatPromptTemplate.from_messages(
+    base_classification_prompt_template = ChatPromptTemplate.from_messages(
         [
             ("system", base_classification_prompt),
             ("human", new_article_message)
@@ -146,26 +157,28 @@ def init_llm_pipeline_for_base_classification():
 
     json_output_parser = JsonOutputParser()
 
-    return desk_prompt_template | model | json_output_parser
+    return base_classification_prompt_template | model | json_output_parser
 
 
-def init_llm_pipeline_for_classifier():
+def init_llm_pipeline_for_classification():
     with open(
             r'C:\code_projects\llm-articles-router\prompts\classifications\classification_prompt.txt',
             'r',
             encoding='utf-8') as file:
-        classification_prompt = file.read()
+        base_classification_prompt = file.read()
 
-    desk_prompt_template = ChatPromptTemplate.from_messages(
+    base_classification_prompt_template = ChatPromptTemplate.from_messages(
         [
-            ("system", classification_prompt),
-            ("human", new_article_message)
+            ("system", base_classification_prompt),
+            ("human", new_base_classification_message)
         ]
     )
 
+    classification_processing_started_handler = RunnableLambda(handle_classification_processing_started)
+
     str_output_parser = StrOutputParser()
 
-    return desk_prompt_template | model | str_output_parser
+    return classification_processing_started_handler | base_classification_prompt_template | model | str_output_parser
 
 
 def init_llm_pipeline():
@@ -188,6 +201,7 @@ def init_llm_pipeline():
     #         desks_llm_pipelines[f'{desk_topic}_desk'] = llm_pipeline_for_topic
 
     llm_pipeline_for_base_classification = init_llm_pipeline_for_base_classification()
+    llm_pipeline_for_classification = init_llm_pipeline_for_classification()
     desks_llm_pipelines['base_classification'] = llm_pipeline_for_base_classification
     parallel_processing_chain = RunnableParallel(
         **desks_llm_pipelines
@@ -196,7 +210,11 @@ def init_llm_pipeline():
     handle_article_received_handler = RunnableLambda(handle_article_processing_started)
     handle_article_finished_handler = RunnableLambda(handle_article_finished)
 
-    result = handle_article_received_handler | parallel_processing_chain | handle_article_finished_handler
+    result = (handle_article_received_handler |
+              parallel_processing_chain |
+              llm_pipeline_for_classification |
+              handle_article_finished_handler
+              )
 
     return result
 

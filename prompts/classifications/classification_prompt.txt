@@ -22,12 +22,25 @@ Your task is to select the recipients who are the best fit for the content, ensu
     * Name: **Mrs Muntz**. Family: Muntz
     * Name: **Nelson Muntz**. Family: Muntz
 
+
+    * Name: **Peter Griffin**. Family: Griffin
+    * Name: **Lois Griffin**. Family: Griffin
+    * Name: **Stewie Griffin**. Family: Griffin
+    * Name: **Cleveland Brown**. Family: Brown
+    * Name: **Cleveland Jr Brown**. Family: Brown
+    * Name: **Dona Brown**. Family: Brown
+    * Name: **Glenn Quagmire**. Family: Quagmire
+    * Name: **Crystal Quagmire**. Family: Quagmire
+
+
+
+
 ---
 
 ### Level 2 — Groups (Families)
 
-* **Definition:** Small collections of $\text{Level 1 Individuals}$ with **inherently shared association** (like a family or a core team). This level aggregates the lowest-level units.
-* **Consists of:** $\text{Level 1 Individuals}$.
+* **Definition:** Small collections of $\text{{Level 1 Individuals}}$ with **inherently shared association** (like a family or a core team). This level aggregates the lowest-level units.
+* **Consists of:** $\text{{Level 1 Individuals}}$.
 * **Examples:**
     1.  **Simpson Family Group**
         * Members: Homer, Marge, Bart, Lisa, Maggie
@@ -38,13 +51,23 @@ Your task is to select the recipients who are the best fit for the content, ensu
     3.  **Muntz Family Group**
         * Members: Eddie, Mrs, Nelson
         * **Primary** Field of Interest: Sports
+    4.  **Griffin Family Group**
+        * Members: Peter, Lois, Stewie
+        * **Primary** Field of Interest: Education
+    5.  **Brown Family Group**
+        * Members: Cleveland, Cleveland Jr, Dona
+        * **Primary** Field of Interest: Health
+    6.  **Quagmire Family Group**
+        * Members: Cleveland, Cleveland Jr, Dona
+        * **Primary** Field of Interest: Sport
+    
 
 ---
 
 ### Level 3 — Communities (Neighborhoods/Divisions)
 
-* **Definition:** Large collections of $\text{Level 2 Groups}$, connected by **overlapping core interests**.
-* **Consists of:** $\text{Level 2 Groups}$.
+* **Definition:** Large collections of $\text{{Level 2 Groups}}$, connected by **overlapping core interests**.
+* **Consists of:** $\text{{Level 2 Groups}}$.
 * **Examples:**
     1.  **Springfield Community**
         * Consists of: Simpson Family Group, Flanders Family Group.
@@ -52,15 +75,24 @@ Your task is to select the recipients who are the best fit for the content, ensu
     2.  **Spring Community**
         * Consists of: Muntz Family Group.
         * **Combined** Field of Interest: Sports
+    3.  **Quahog Community**
+        * Consists of: Griffin Family Group, Brown Family Group.
+        * **Combined** Field of Interest: Education, Health.
+    4. **Stoolbend Community**
+        * Consists of: Quagmire Family Group.
+        * **Combined** Field of Interest: Sports
 
 ---
 
 ### Level 4 — Society (Region/Organization)
 
-* **Definition:** The **highest, governing unit** in the schema. A comprehensive aggregation of $\text{Level 3 Communities}$ with a **shared, overarching governance** structure.
-* **Consists of:** $\text{Level 3 Communities}$.
+* **Definition:** The **highest, governing unit** in the schema. A comprehensive aggregation of $\text{{Level 3 Communities}}$ with a **shared, overarching governance** structure.
+* **Consists of:** $\text{{Level 3 Communities}}$.
 * **Example:**
     1.  **Oregon Society**
+        * Consists of: Springfield Community, Spring Community
+        * **Total** Fields of Interest: Politics, Economy, Sports (reflecting all subordinate interests)
+    2.  **Rhode Island Society**
         * Consists of: Springfield Community, Spring Community
         * **Total** Fields of Interest: Politics, Economy, Sports (reflecting all subordinate interests)
 
@@ -102,3 +134,14 @@ Evaluate the primary intent of the content.
 Select the unit with the closest direct relevance.
 If ambiguity remains, choose the smallest unit that can legitimately receive it.
 
+---
+
+### Formal Output Requirements
+
+Your final output must contain three parts:
+
+| Field | Requirement |
+| :--- | :--- |
+| **Recipients** | The final recipient(s) as a full, dot-separated hierarchical path, or **Unclassified** or **Out-of-Scope**. |
+| **Justification** | A short, concise reasoning referencing **ONLY** textual evidence and fit rules. |
+| **Confidence** | A score reflecting how well the input matches the level definition (e.g., `0.95`). |
