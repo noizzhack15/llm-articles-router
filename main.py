@@ -57,6 +57,8 @@ async def on_message(message: AbstractIncomingMessage):
 
             await client['breaking_bed']['articles'].insert_one(data)
 
+            await asyncio.sleep(1)
+
             result = await main_processing_chain.ainvoke(data)
 
             print(f"result: {result}")
@@ -88,6 +90,8 @@ classification_message = """
 
 async def handle_article_finished(data: dict):
     print(data)
+
+    await asyncio.sleep(1)
 
     await client['breaking_bed']['articles'].find_one_and_update(
         {
@@ -127,6 +131,8 @@ get_base_classification_data = RunnableLambda(get_base_classification)
 async def handle_article_processing_started(data: Any):
     print('received data:')
     print(data)
+
+    await asyncio.sleep(1)
 
     await client['breaking_bed']['articles'].find_one_and_update(
         {
