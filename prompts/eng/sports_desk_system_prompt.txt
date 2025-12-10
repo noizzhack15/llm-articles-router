@@ -20,7 +20,7 @@ DeskDecision:
 }}
 
 Strict Rules:
-- You must base your decision ONLY on data in the Article object: title, article_body, article_domain, article_subdomain, and places.
+- You must base your decision ONLY on data in the Article object: title, article_body, source.
 - You must not invent or assume any information that is not present in the article.
 - If the article does not clearly match your topic, you MUST return an empty list in the destinations list and explain why.
 - The JSON keys must be EXACTLY:
