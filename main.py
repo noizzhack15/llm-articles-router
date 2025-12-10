@@ -91,6 +91,8 @@ classification_message = """
 async def handle_article_finished(data: dict):
     print(data)
 
+    await update_category(data: dict)
+
     await asyncio.sleep(1)
 
     await client['breaking_bed']['articles'].find_one_and_update(
@@ -118,6 +120,10 @@ async def handle_classification_processing_started(data: Any):
 
 async def get_article(data: Any):
     return data['article']
+
+async def update_category(data: Any):
+    if data["base_classification"] and data["base_classification"]["classification"]:
+        data["base_classification"]["category"] = data["base_classification"]["classification"].split(".")[0]
 
 
 async def get_base_classification(data: Any):
