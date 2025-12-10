@@ -153,3 +153,5 @@ Your final output MUST be in json with three fields:
     "confidence": confidence // A score reflecting how well the input matches the level definition (e.g., `0.95`).
 }}
 
+OUTPUT JUST THE JSON - DONT ADD any string before or after
+

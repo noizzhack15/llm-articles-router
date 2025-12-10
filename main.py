@@ -29,9 +29,11 @@ async def start_rabbitmq():
     if queue is None:
         connection = await connect_robust(os.getenv("RABBITMQ_CONNECTION_STRING"))
         channel = await connection.channel()
+        await channel.set_qos(10)
         queue = await channel.declare_queue(
             "test",
-            durable=True
+            durable=True,
+
         )
 
         await queue.consume(on_message)
@@ -64,6 +66,10 @@ async def on_message(message: AbstractIncomingMessage):
 
 model = init_chat_model("gpt-4.1-mini")
 
+# model = ChatCohere(
+#     model="command-a-03-2025"
+# )
+
 new_article_message = """
         ##### news article to process #####
         - article_id: {article_id}
@@ -72,7 +78,7 @@ new_article_message = """
         - article_body: {article_body}
     """
 
-new_base_classification_message = """
+classification_message = """
         ##### news classification to process #####
         - classification: {classification}
         - justification: {justification}
@@ -85,14 +91,14 @@ async def handle_article_finished(data: dict):
 
     await client['breaking_bed']['articles'].find_one_and_update(
         {
-            "article_id": data['article']['article']['article_id'],
-            "system_article_id": data['article']['article']['system_article_id']
+            "article_id": data['article']['article_id'],
+            "system_article_id": data['article']['system_article_id']
         },
         {
             "$set": {
                 "state": ArticleStatus.AGENTS_FINISHED.name,
-                "classification": json.loads(data["classification"]),
-                "base_classification": data["base_classification"]["base_classification"]
+                "classification": data["classification"],
+                "base_classification": data["base_classification"]
             }
         })
 
@@ -104,6 +110,18 @@ async def handle_classification_processing_started(data: Any):
         **data['base_classification'],
         **data['article']
     }
+
+
+async def get_article(data: Any):
+    return data['article']
+
+
+async def get_base_classification(data: Any):
+    return data['base_classification']
+
+
+get_article_data = RunnableLambda(get_article)
+get_base_classification_data = RunnableLambda(get_base_classification)
 
 
 async def handle_article_processing_started(data: Any):
@@ -161,23 +179,23 @@ def init_llm_pipeline_for_classification():
             r'C:\code_projects\llm-articles-router\prompts\classifications\classification_prompt.txt',
             'r',
             encoding='utf-8') as file:
-        base_classification_prompt = file.read()
+        classification_prompt = file.read()
 
-    base_classification_prompt_template = ChatPromptTemplate.from_messages(
+    classification_prompt_template = ChatPromptTemplate.from_messages(
         [
-            ("system", base_classification_prompt),
-            ("human", new_base_classification_message)
+            ("system", classification_prompt),
+            ("human", classification_message)
         ]
     )
 
     classification_processing_started_handler = RunnableLambda(handle_classification_processing_started)
 
-    str_output_parser = StrOutputParser()
+    json_output_parser = JsonOutputParser()
 
     parallel_processing_chain = RunnableParallel(
-        classification=classification_processing_started_handler | base_classification_prompt_template | model | str_output_parser,
-        article=RunnablePassthrough(),
-        base_classification=RunnablePassthrough()
+        classification=classification_processing_started_handler | classification_prompt_template | model | json_output_parser,
+        article=RunnablePassthrough() | get_article_data,
+        base_classification=RunnablePassthrough() | get_base_classification_data,
     )
 
     return parallel_processing_chain
