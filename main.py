@@ -132,8 +132,6 @@ async def handle_article_processing_started(data: Any):
     print('received data:')
     print(data)
 
-    await asyncio.sleep(1)
-
     await client['breaking_bed']['articles'].find_one_and_update(
         {
             "article_id": data['article_id'],
@@ -144,6 +142,8 @@ async def handle_article_processing_started(data: Any):
                 "state": ArticleStatus.STARTED.name
             }
         })
+
+    await asyncio.sleep(1)
 
     return data
 
