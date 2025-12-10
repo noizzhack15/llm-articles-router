@@ -163,7 +163,7 @@ def init_llm_pipeline_for_topic(desk_prompt: str):
 
 def init_llm_pipeline_for_base_classification():
     with open(
-            r'C:\code_projects\llm-articles-router\prompts\classifications\base_classification_prompt.txt',
+            r'.\prompts\classifications\base_classification_prompt.txt',
             'r',
             encoding='utf-8') as file:
         base_classification_prompt = file.read()
@@ -182,7 +182,7 @@ def init_llm_pipeline_for_base_classification():
 
 def init_llm_pipeline_for_classification():
     with open(
-            r'C:\code_projects\llm-articles-router\prompts\classifications\classification_prompt.txt',
+            r'.\prompts\classifications\classification_prompt.txt',
             'r',
             encoding='utf-8') as file:
         classification_prompt = file.read()
