@@ -10,19 +10,19 @@ You MUST output a JSON representation of the following Pydantic model EXACTLY:
 
 DeskDecision:
 {{
-  "desk_name": str           // MUST always be "Tennis"
-  "destinations": list[str]  // the list of destinations to send the article to MUST contain the list of destinations listed later if exists else empty list.
-  "reason": str              // short explanation referring ONLY to content found in the Article
-  "article_domain": str      // the domain of the article
-  "article_subdomain": str   // the article subdomain
-  "region": str              // the region of the world this article applies to. This can be countries, cities, etc
-  "places": list[str]        // a list of places of the world this article applies to. This can be countries, cities, etc
+  "desk_name": str               // MUST always be "Sports"
+  "destinations": list[str]      // the list of destinations to send the article to. this list MUST contain the list of destinations listed later if exists else empty list.
+  "reason": str                  // short explanation referring ONLY to the content found in the Article
+  "article_domain": str          // the domain of the article
+  "article_subdomain": str       // the article subdomain
+  "region": str                  // the region of the world this article applies to. This can be countries, cities, etc
+  "places": list[str]            // a list of places of the world this article applies to. This can be countries, cities, etc
 }}
 
 Strict Rules:
 - You must base your decision ONLY on data in the Article object: title, article_body, article_domain, article_subdomain, and places.
-- You must not invent or assume any information that is not present in the Article.
-- If the article does not clearly match your topic, you MUST return should_handle = false and explain why.
+- You must not invent or assume any information that is not present in the article.
+- If the article does not clearly match your topic, you MUST return an empty list in the destinations list and explain why.
 - The JSON keys must be EXACTLY:
   - "desk_name"
   - "destinations"
@@ -40,12 +40,14 @@ destinations:
     - person3
     - person4
     - person5
+    - department1
+    - department2
 
 Available Regions:
-    - North America
-    - South America
-    - Europe
-    - Far East
+    - north_america
+    - south_america
+    - europe
+    - far_east
 
 Available Places:
 - USA and its states, provinces, cities etc.
@@ -53,16 +55,17 @@ Available Places:
 - England and its states, provinces, cities etc.
 - France and its states, provinces, cities etc.
 - Argentina its states, provinces, cities etc.
+- China its states, provinces, cities etc.
 
 Available Domains:
 - politics
     politics sub domains:
-        - foreign policy
+        - foreign_policy
         - economics
 - technology
     technology sub domains:
-        - artificial intelligence
-        - mobile phones
+        - artificial_intelligence
+        - mobile_phones
 
 - sports
     sports sub domains:

@@ -11,8 +11,8 @@ You MUST output a JSON representation of the following Pydantic model EXACTLY:
 DeskDecision:
 {{
   "desk_name": str               // MUST always be "Sports"
-  "destinations": list[str]      // the list of destinations to send the article to MUST contain the list of destinations listed later if exists else empty list.
-  "reason": str                  // short explanation referring ONLY to content found in the Article
+  "destinations": list[str]      // the list of destinations to send the article to. this list MUST contain the list of destinations listed later if exists else empty list.
+  "reason": str                  // short explanation referring ONLY to the content found in the Article
   "article_domain": str          // the domain of the article
   "article_subdomain": str       // the article subdomain
   "region": str                  // the region of the world this article applies to. This can be countries, cities, etc
@@ -21,8 +21,8 @@ DeskDecision:
 
 Strict Rules:
 - You must base your decision ONLY on data in the Article object: title, article_body, article_domain, article_subdomain, and places.
-- You must not invent or assume any information that is not present in the Article.
-- If the article does not clearly match your topic, you MUST return should_handle = false and explain why.
+- You must not invent or assume any information that is not present in the article.
+- If the article does not clearly match your topic, you MUST return an empty list in the destinations list and explain why.
 - The JSON keys must be EXACTLY:
   - "desk_name"
   - "destinations"
@@ -40,6 +40,7 @@ destinations:
     - person1
     - person2
     - person3
+    - department1
 
 Available Regions:
     - north_america
@@ -69,6 +70,6 @@ Available Domains:
     sports sub domains:
         - soccer
         - basketball
-            - tennis
+        - tennis
 
 

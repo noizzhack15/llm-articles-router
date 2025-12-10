@@ -115,7 +115,7 @@ async def handle_article_finished(data: dict):
     return data
 
 
-async def handle_article_processing_started(data: Any):
+async def handle_article_processing_started(data: dict):
     print('received data:')
     print(data)
 
