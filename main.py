@@ -32,6 +32,8 @@ async def start_rabbitmq():
     if queue is None:
         connection = await connect_robust(os.getenv("RABBITMQ_CONNECTION_STRING"))
         channel = await connection.channel()
+        await channel.set_qos(10)
+
         queue = await channel.declare_queue(
             "breaking_feed_queues",
             durable=True
@@ -80,6 +82,10 @@ async def debugger(data: dict):
     return data
 
 
+async def route_message_to_destinations(data: dict):
+    return data
+
+
 async def handle_guardrails_finished_successfully(data: dict):
     del data["article"]["_id"]
     return data['article']
@@ -93,7 +99,7 @@ async def handle_article_finished(data: dict):
         if key == "article" or key == "guardrails_result":
             continue
 
-        agents_results.append(json.loads(agents_result))
+        agents_results.append(agents_result)
 
     if data["guardrails_result"]["violates_privacy_regulations"]:
         article_status = ArticleStatus.FINISHED.name
@@ -185,11 +191,12 @@ def init_llm_pipeline():
     )
 
     handle_article_received_handler = RunnableLambda(handle_article_processing_started)
+    route_message_handler = RunnableLambda(route_message_to_destinations)
     handle_article_finished_handler = RunnableLambda(handle_article_finished)
     handle_guardrails_finished_successfully_handler = RunnableLambda(handle_guardrails_finished_successfully)
 
     guardrails_pipeline = init_llm_guardrails_pipline()
-    message_passed_guardrails_pipeline = handle_guardrails_finished_successfully_handler | parallel_processing_chain | handle_article_finished_handler
+    message_passed_guardrails_pipeline = handle_guardrails_finished_successfully_handler | parallel_processing_chain | route_message_handler | handle_article_finished_handler
 
     branch = RunnableBranch(
         (check_violates_privacy_regulations, message_passed_guardrails_pipeline),
@@ -211,7 +218,7 @@ def init_llm_pipeline_for_topic(desk_prompt: str):
         ]
     )
 
-    return desk_prompt_template | model | str_output_parser
+    return desk_prompt_template | model | json_output_parser
 
 
 main_processing_chain = init_llm_pipeline()
