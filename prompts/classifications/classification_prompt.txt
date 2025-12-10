@@ -2,7 +2,7 @@
 
 ## **Org Chart Schema (with Occupation Attribute)**
 
-The hierarchy contains **four levels**, each defined by the required attributes and allowed relationships.
+The hierarchy contains **four levels**, each defgit branchined by the required attributes and allowed relationships.
 
 ### **Occupation Attribute**
 
