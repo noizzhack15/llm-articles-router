@@ -15,6 +15,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda, RunnableBranch
 from pymongo import AsyncMongoClient
 
+from dtos.article import Article
 from enums.article_status import ArticleStatus
 
 load_dotenv()
@@ -35,7 +36,7 @@ async def start_rabbitmq():
         await channel.set_qos(10)
 
         queue = await channel.declare_queue(
-            "breaking_feed_queues",
+            "test",
             durable=True
         )
 
@@ -52,15 +53,23 @@ async def on_message(message: AbstractIncomingMessage):
 
             data = {
                 **message_data,
-                "system_article_id": str(uuid.uuid4()),
-                "state": ArticleStatus.RECEIVED.name
+                "article_id": str(uuid.uuid4()),
+                "article_system_id": str(uuid.uuid4()),
+                "status": ArticleStatus.RECEIVED.name
             }
+
+            data1 = Article.model_validate({
+                **message_data,
+                "article_id": str(uuid.uuid4()),
+                "article_system_id": str(uuid.uuid4()),
+                "status": ArticleStatus.RECEIVED
+            })
 
             print(f"Received message: {message_str}")
 
-            await client['breaking_bed']['articles'].insert_one(data)
+            await client['breaking_bed']['articles1'].insert_one(data)
 
-            result = await main_processing_chain.ainvoke(data)
+            result = await main_processing_chain.ainvoke(data1)
 
             print(f"result: {result}")
     except Exception as ex:
@@ -78,21 +87,32 @@ new_article_message = """
     """
 
 
-async def debugger(data: dict):
+async def debugger(data: Any):
     return data
 
 
-async def route_message_to_destinations(data: dict):
+debugger_handler = RunnableLambda(debugger)
+
+
+async def route_message_to_destinations(data: Article):
     return data
 
 
-async def handle_guardrails_finished_successfully(data: dict):
-    del data["article"]["_id"]
-    return data['article']
+async def handle_guardrails_finished_successfully(data: Article):
+    result = {
+        **data['article'],
+        'article': data['article'],
+        'guardrails_result': data['guardrails_result']
+    }
+
+    return result
 
 
 async def handle_article_finished(data: dict):
     print(data)
+
+    del data["article"]["_id"]
+
     agents_results = []
 
     for key, agents_result in data.items():
@@ -106,10 +126,10 @@ async def handle_article_finished(data: dict):
     else:
         article_status = ArticleStatus.NOT_PASSED_PRIVACY_CHECKS.name
 
-    await client['breaking_bed']['articles'].find_one_and_update(
+    await client['breaking_bed']['articles1'].find_one_and_update(
         {
             "article_id": data['article']['article_id'],
-            "system_article_id": data['article']['system_article_id']
+            "article_system_id": data['article']['article_system_id']
         },
         {
             "$set": {
@@ -121,21 +141,22 @@ async def handle_article_finished(data: dict):
     return data
 
 
-async def handle_article_processing_started(data: dict):
+async def handle_article_processing_started(data: Article):
     print('received data:')
     print(data)
 
-    await client['breaking_bed']['articles'].find_one_and_update(
+    await client['breaking_bed']['articles1'].find_one_and_update(
         {
-            "article_id": data['article_id'],
-            "system_article_id": data['system_article_id']
+            "article_id": data.article_id,
+            "system_article_id": data.article_system_id
         },
         {
             "$set": {
-                "state": ArticleStatus.STARTED.name
+                "status": ArticleStatus.STARTED.name
             }
         })
 
+    data.status = ArticleStatus.STARTED
     return data
 
 
@@ -163,8 +184,8 @@ def init_llm_guardrails_pipline():
     )
 
 
-def check_violates_privacy_regulations(data: dict):
-    return not data["guardrails_result"]["violates_privacy_regulations"]
+def check_violates_privacy_regulations(data: Article):
+    return not data.guardrails_result.violates_privacy_regulations
 
 
 def init_llm_pipeline():
@@ -204,6 +225,7 @@ def init_llm_pipeline():
     )
 
     result = (handle_article_received_handler |
+              RunnablePassthrough(),
               guardrails_pipeline |
               branch)
 
