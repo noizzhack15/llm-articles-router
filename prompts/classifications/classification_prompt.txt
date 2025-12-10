@@ -1,82 +1,274 @@
-# **Org Chart Schema Prompt (Optimized for GPT-mini 4.1)**
-
 ## **Org Chart Schema (with Occupation Attribute)**
-
-The hierarchy contains **four levels**, each defgit branchined by the required attributes and allowed relationships.
-
-### **Occupation Attribute**
-
-* **Level 1 (Individual):** The person’s *specific job title* or role.
-* **Level 2 (Group):** The family’s *collective function* or main source of income/focus.
-* **Level 3 (Community):** The community’s *primary economic function*.
-* **Level 4 (Society):** The Society’s *governance or operational role*.
+The hierarchy contains **four levels**, each defined by the required attributes and allowed relationships.
 
 ---
 
 ## **Level 1 — Individuals**
-
 **Definition:** Single persons with unique identity, defined by **Name**, **Occupation**, and **Family**.
-
 **Examples:**
-(Homer Simpson — Nuclear Safety Inspector — Simpson)
-(Marge Simpson — Homemaker — Simpson)
-(Lisa Simpson — Student — Simpson)
-(Bart Simpson — Student — Simpson)
-(Maggie Simpson — Infant — Simpson)
-(Maude Flanders — Homemaker — Flanders)
-(Ned Flanders — Shop Owner — Flanders)
-(Rod Flanders — Student — Flanders)
-(Todd Flanders — Student — Flanders)
-(Eddie Muntz — Police Officer — Muntz)
-(Mrs. Muntz — Factory Worker — Muntz)
-(Nelson Muntz — Student — Muntz)
-(Peter Griffin — Industrial Worker — Griffin)
-(Lois Griffin — Homemaker — Griffin)
-(Stewie Griffin — Infant — Griffin)
-(Cleveland Brown — Deli Owner — Brown)
-(Cleveland Jr — Student — Brown)
-(Dona Brown — Homemaker — Brown)
-(Glenn Quagmire — Unemployed — Quagmire)
-(Crystal Quagmire — Homemaker — Quagmire)
+
+1. **Name:** Sarah Kim
+   **Occupation:** Data Analyst
+   **Family:** Kim
+
+2. **Name:** Daniel Rivera
+   **Occupation:** Electrician
+   **Family:** Rivera
+
+3. **Name:** Olivia Thompson
+   **Occupation:** Graphic Designer
+   **Family:** Thompson
+
+4. **Name:** Marcus Patel
+   **Occupation:** Civil Engineer
+   **Family:** Patel
+
+5. **Name:** Emily Chen
+   **Occupation:** Pediatric Nurse
+   **Family:** Chen
+
+6. **Name:** Jonathan Brooks
+   **Occupation:** High School Teacher
+   **Family:** Brooks
+
+7. **Name:** Chloe Martinez
+   **Occupation:** Marketing Specialist
+   **Family:** Martinez
+
+8. **Name:** David O’Connor
+   **Occupation:** Software Developer
+   **Family:** O’Connor
+
+9. **Name:** Aisha Hassan
+   **Occupation:** Accountant
+   **Family:** Hassan
+
+10. **Name:** Liam Walker
+    **Occupation:** Chef
+    **Family:** Walker
+
+11. **Name:** Priya Rao
+    **Occupation:** Pharmacist
+    **Family:** Rao
+
+12. **Name:** Benjamin Turner
+    **Occupation:** Journalist
+    **Family:** Turner
+
+13. **Name:** Zoe Laurent
+    **Occupation:** Architect
+    **Family:** Laurent
+
+14. **Name:** Noah Stein
+    **Occupation:** Mechanical Engineer
+    **Family:** Stein
+
+15. **Name:** Mila Petrova
+    **Occupation:** Fashion Designer
+    **Family:** Petrova
+
+16. **Name:** Gabriel Santos
+    **Occupation:** Firefighter
+    **Family:** Santos
+
+17. **Name:** Hana Suzuki
+    **Occupation:** Research Scientist
+    **Family:** Suzuki
+
+18. **Name:** Victor Novak
+    **Occupation:** Carpenter
+    **Family:** Novak
+
+19. **Name:** Laura Becker
+    **Occupation:** Attorney
+    **Family:** Becker
+
+20. **Name:** Ethan Morgan
+    **Occupation:** Pilot
+    **Family:** Morgan
 
 ---
 
-## **Level 2 — Groups (Families)**
+## **Level 2 — Groups**
 
-**Definition:** Collections of Level 1 individuals with shared identity. Defined by **Members**, **Collective Occupation**, and **Field of Interest**.
+**Definition:** Collections of Level 1 individuals with shared identity.
+Each group defined by:
+* **Collective Occupation** — the shared functional focus of the group
+* **Field of Interest** — what this group is generally oriented toward
+* **Members** — individuals from your original list who best fit that function
 
-**Examples:**
+## **1. Data & Engineering Group**
 
-1. **Simpson Family** — Occupation: Safety, Students — Interest: Politics
-2. **Flanders Family** — Occupation: Business Owner, Students — Interest: Economy
-3. **Muntz Family** — Occupation: Security, Industrial — Interest: Sports
-4. **Griffin Family** — Occupation: Industrial — Interest: Education
-5. **Brown Family** — Occupation: Commerce — Interest: Health
-6. **Quagmire Family** — Occupation: Yoga Instructor — Interest: Sport
-
----
-
-## **Level 3 — Communities**
-
-**Definition:** Collections of Level 2 Groups. Defined by **Groups**, **Primary Occupation**, and **Combined Field of Interest**.
-
-**Examples:**
-
-1. **Springfield Community** — Groups: Simpson, Flanders — Occupation: Safety & Commerce — Interests: Politics, Economy
-2. **Spring Community** — Groups: Muntz — Occupation: Security & Industrial — Interest: Sports
-3. **Quahog Community** — Groups: Griffin, Brown — Occupation: Security & Industrial — Interests: Education, Health
-4. **Stoolbend Community** — Groups: Quagmire — Occupation: Leisure — Interest: Sports
+**Collective Occupation:** Technical & Analytical Services
+**Field of Interest:** Data analysis, system reliability, engineering innovation
+**Members:**
+* Sarah Kim — Data Analyst
+* Marcus Patel — Civil Engineer
+* Noah Stein — Mechanical Engineer
+* Hana Suzuki — Research Scientist
+* David O’Connor — Software Developer
 
 ---
 
-## **Level 4 — Society**
+## **2. Creative & Design Group**
 
-**Definition:** Highest governing unit. Defined by **Communities**, **Primary Occupation**, and **Total Fields of Interest**.
+**Collective Occupation:** Creative Production & Visual Communication
+**Field of Interest:** Design, brand identity, visual storytelling
+**Members:**
+* Olivia Thompson — Graphic Designer
+* Mila Petrova — Fashion Designer
+* Zoe Laurent — Architect
+
+---
+
+## **3. Healthcare & Public Safety Group**
+
+**Collective Occupation:** Public Health & Emergency Response
+**Field of Interest:** Medical care, pharmaceutical guidance, rescue services
+**Members:**
+* Emily Chen — Pediatric Nurse
+* Priya Rao — Pharmacist
+* Gabriel Santos — Firefighter
+
+---
+
+## **4. Business, Finance & Legal Group**
+
+**Collective Occupation:** Professional Business Services
+**Field of Interest:** Finance, legal counsel, organizational operations
+**Members:**
+* Aisha Hassan — Accountant
+* Laura Becker — Attorney
+
+---
+
+## **5. Education, Journalism & Communication Group**
+
+**Collective Occupation:** Knowledge Distribution & Public Information
+**Field of Interest:** Teaching, investigative reporting, content dissemination
+**Members:**
+* Jonathan Brooks — High School Teacher
+* Benjamin Turner — Journalist
+
+---
+
+## **6. Skilled Trades & Culinary Group**
+
+**Collective Occupation:** Hands-On Craft & Service Professions
+**Field of Interest:** Culinary arts, home construction, mechanical craftsmanship, transportation
+**Members:**
+* Daniel Rivera — Electrician
+* Victor Novak — Carpenter
+* Liam Walker — Chef
+* Ethan Morgan — Pilot
+
+---
+
+## **Level 3 — Divisions**
+
+**Definition:** Collections of Level 2 Groups.
+Each defined by:
+* **Groups (which Level-2 groups belong inside the division)**
+* **Primary Occupation (the overarching functional identity of the division)**
+* **Combined Field of Interest (merged from the member groups)**
 
 **Examples:**
 
-1. **Oregon Society** — Communities: Springfield, Spring — Occupation: Science & Commerce / Security & Industrial — Interests: Politics, Economy, Sports
-2. **Rhode Island Society** — Communities: Quahog, Stoolbend — Occupation: Leisure / Security & Industrial — Interests: Politics, Economy, Sports
+## **1. Science, Technology & Engineering Division**
+
+**Groups Included:**
+* Data & Engineering Group
+* Creative & Design Group
+
+**Primary Occupation:** Innovative Technical & Creative Development
+**Combined Field of Interest:** Data analytics, engineering innovation, system design, architectural planning, creative visualization, brand and product development.
+
+---
+
+## **2. Health, Safety & Community Services Division**
+
+**Groups Included:**
+* Healthcare & Public Safety Group
+* Education, Journalism & Communication Group
+
+**Primary Occupation:** Public Well-Being, Knowledge Distribution & Emergency Response
+**Combined Field of Interest:** Medical care, pharmaceutical guidance, emergency rescue, teaching, public information, investigative reporting, community knowledge support.
+
+---
+
+## **3. Business, Finance & Legal Affairs Division**
+
+**Groups Included:**
+* Business, Finance & Legal Group
+
+**Primary Occupation:** Corporate, Financial & Organizational Governance
+**Combined Field of Interest:** Financial operations, legal counsel, organizational structure, strategic oversight.
+
+---
+
+## **4. Skilled Trades, Culinary & Transport Division**
+
+**Groups Included:**
+* Skilled Trades & Culinary Group
+
+**Primary Occupation:** Hands-On Service, Craftsmanship & Operational Logistics
+**Combined Field of Interest:** Electrical work, carpentry, culinary arts, aviation, manual craftsmanship, practical infrastructure services.
+
+---
+
+## **Level 4 — Companies**
+
+**Definition:** Highest governing unit.
+Each defined by:
+* **Divisions Included**
+* **Primary Occupation** (the overarching organizational identity)
+* **Total Fields of Interest** (all fields combined from the divisions inside the company)
+
+---
+Examples:
+
+## **Company A — Tech, Innovation & Public Services Corporation**
+
+**Divisions Included:**
+* Science, Technology & Engineering Division
+* Health, Safety & Community Services Division
+
+**Primary Occupation:** Holistic Innovation, Public Service Infrastructure & Knowledge Systems
+
+**Total Fields of Interest:**
+* Data analytics
+* Engineering innovation
+* System design & architecture
+* Creative visualization & product development
+* Medical care & pharmaceutical guidance
+* Emergency response services
+* Teaching & educational outreach
+* Public information & investigative journalism
+* Community-focused service operations
+
+This company combines **advanced technological development** with **public welfare services**, forming a large-scale civic and innovation entity.
+
+---
+
+## **Company B — Business Operations, Legal Affairs & Skilled Trade Services**
+
+**Divisions Included:**
+* Business, Finance & Legal Affairs Division
+* Skilled Trades, Culinary & Transport Division
+
+**Primary Occupation:** Operational Services, Infrastructure Delivery & Corporate Governance
+
+**Total Fields of Interest:**
+* Financial management
+* Legal counsel & compliance
+* Organizational operations
+* Electrical and structural craftsmanship
+* Carpentry & manual trades
+* Culinary arts & hospitality
+* Transportation logistics & aviation
+* Practical infrastructure support
+
+This company covers **corporate governance**, **financial/legal services**, and **hands-on trade-based operations**, forming a practical, service-oriented enterprise.
 
 ---
 
@@ -85,64 +277,52 @@ The hierarchy contains **four levels**, each defgit branchined by the required a
 Follow these rules **in order**, using only the schema.
 
 ### **Rule 1 — Match by Field of Interest**
-
 Determine the topic (Politics, Economy, Sports, Education, Health, etc.).
 Assign only to recipients whose **Field of Interest** matches.
 
 ### **Rule 2 — Choose the Lowest Level That Fits**
-
 * If content is about an individual → assign to Level 1.
-* If content is about a family → assign to Level 2.
-* If content is broad within a community → Level 3.
-* If content spans multiple communities → Level 4.
+* If content is about a group → assign to Level 2.
+* If content is broad within a division → Level 3.
+* If content spans multiple companies → Level 4.
 
 ### **Rule 3 — Escalate Upward Only When Necessary**
-
 Move *up* only when no lower unit is a valid match.
 
 ### **Rule 4 — Maintain Structural Consistency**
-
-* No invented individuals, families, or communities.
+* No invented individuals, groups, or divisions.
 * No jumping sideways or breaking hierarchy.
 
 ### **Rule 5 — Avoid Ambiguity**
-
 If multiple matches exist:
 Pick the **smallest unit** with the **closest relevance**.
 
 ---
 
 # **Required Output Format**
-
 Produce exactly three fields:
 
 ### **1. Recipients**
-
 * One or more **dot-separated hierarchical paths**, e.g.:
-  `Oregon Society.Springfield Community.Simpson Family.Lisa Simpson`
+  `Company B. Business Division. Finance & Legal Group. Laura Becker — Attorney`
 * OR: `Unclassified`
 * OR: `Out-of-Scope`
 
 ### **2. Justification**
-
 * Short, direct reasoning.
 * Reference **only** schema facts + rules.
 
 ### **3. Confidence**
-
 * A numeric score (e.g., `0.94`).
 
 ---
 
 # **You Are Now the Classification Engine**
-
 When given content, GPT-mini 4.1 must:
-
 1. Identify the category/topic.
 2. Apply all rules sequentially.
 3. Choose the correct hierarchical recipients.
 4. Produce the required output.
----
 
 ### Formal Output Requirements
 
@@ -150,7 +330,7 @@ Your final output MUST be in json with three fields:
 {{
     "recipients": "recipients", // The final recipient(s) as a full, dot-separated hierarchical path, or **Unclassified** or **Out-of-Scope**.
     "justification": "Justification", // A short, concise reasoning referencing **ONLY** textual evidence and fit rules.
-    "confidence": confidence // A score reflecting how well the input matches the level definition (e.g., `0.95`).
+    "confidence": confidence // A score reflecting how well the input matches the level definition (e.g., `0.95`). this must be a valid number not string
 }}
 
 OUTPUT JUST THE JSON - DONT ADD any string before or after

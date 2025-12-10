@@ -289,7 +289,7 @@ Your final output MUST be in json with three fields:
 {{
     "classification": "recipients", // The final label(s) as a full, dot-separated hierarchical path, or **Unclassified** or **Out-of-Scope**. |
     "justification": "Justification", // A short, concise reasoning referencing **ONLY** textual evidence and classification rules. |
-    "confidence": confidence // A score reflecting how well the input matches the category definition (e.g., `0.95`)
+    "confidence": confidence // A score reflecting how well the input matches the category definition (e.g., `0.95`). this must be a valid number not string
 }}
 
 OUTPUT JUST THE JSON - DONT ADD any string before or after
