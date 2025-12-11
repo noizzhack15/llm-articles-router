@@ -279,16 +279,16 @@ def init_llm_pipeline_for_finalization():
 
 
 def init_llm_pipeline():
-    desks_llm_pipelines: dict[str, Any] = {
-        "article": RunnablePassthrough()
-    }
-
     finished = RunnableLambda(handle_classification_finished)
 
     llm_pipeline_for_base_classification = init_llm_pipeline_for_base_classification()
     llm_pipeline_for_classification = init_llm_pipeline_for_classification()
     llm_pipeline_for_finalization = init_llm_pipeline_for_finalization()
-    desks_llm_pipelines['base_classification'] = llm_pipeline_for_base_classification
+    desks_llm_pipelines = {
+        'base_classification': llm_pipeline_for_base_classification,
+        "article": RunnablePassthrough()
+    }
+
     parallel_processing_chain = RunnableParallel(
         **desks_llm_pipelines
     ) | finished
