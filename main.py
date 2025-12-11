@@ -57,7 +57,7 @@ async def on_message(message: AbstractIncomingMessage):
 
             await client['breaking_bed']['articles'].insert_one(data)
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.5)
 
             result = await main_processing_chain.ainvoke(data)
 
@@ -100,7 +100,7 @@ async def handle_article_finished(data: dict):
 
     await update_category(data)
 
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.5)
 
     await client['breaking_bed']['articles'].find_one_and_update(
         {
@@ -122,7 +122,7 @@ async def handle_article_finished(data: dict):
 async def handle_classification_finished(data: dict):
     print(data)
 
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.5)
 
     await client['breaking_bed']['articles'].find_one_and_update(
         {
@@ -141,7 +141,7 @@ async def handle_classification_finished(data: dict):
 async def handle_finalization_finished(data: dict):
     print(data)
 
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.5)
 
     await client['breaking_bed']['articles'].find_one_and_update(
         {
@@ -206,7 +206,7 @@ async def handle_article_processing_started(data: Any):
             }
         })
 
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.5)
 
     return data
 
