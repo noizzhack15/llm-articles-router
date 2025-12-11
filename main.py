@@ -9,7 +9,7 @@ from aio_pika import connect_robust
 from aio_pika.abc import AbstractIncomingMessage
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
-from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
+from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda
 from pymongo import AsyncMongoClient
@@ -31,7 +31,7 @@ async def start_rabbitmq():
         channel = await connection.channel()
         await channel.set_qos(10)
         queue = await channel.declare_queue(
-            "test",
+            "breaking_feed_queues",
             durable=True,
 
         )
@@ -87,6 +87,13 @@ classification_message = """
         - confidence: {confidence}
     """
 
+finalization_message = """
+        ##### news finalization  to process #####
+        - base_classification: {base_classification}
+        - classification: {classification}
+        - article: {article}
+    """
+
 
 async def handle_article_finished(data: dict):
     print(data)
@@ -102,7 +109,8 @@ async def handle_article_finished(data: dict):
             "$set": {
                 "state": ArticleStatus.AGENTS_FINISHED.name,
                 "classification": data["classification"],
-                "base_classification": data["base_classification"]
+                "base_classification": data["base_classification"],
+                "finalization": data["finalization"]
             }
         })
 
@@ -124,8 +132,18 @@ async def get_base_classification(data: Any):
     return data['base_classification']
 
 
+async def get_classification(data: Any):
+    return data['classification']
+
+
+async def debug(data: Any):
+    return data
+
+
 get_article_data = RunnableLambda(get_article)
 get_base_classification_data = RunnableLambda(get_base_classification)
+get_classification_data = RunnableLambda(get_classification)
+d = RunnableLambda(debug)
 
 
 async def handle_article_processing_started(data: Any):
@@ -146,19 +164,6 @@ async def handle_article_processing_started(data: Any):
     await asyncio.sleep(1)
 
     return data
-
-
-def init_llm_pipeline_for_topic(desk_prompt: str):
-    desk_prompt_template = ChatPromptTemplate.from_messages(
-        [
-            ("system", desk_prompt),
-            ("human", new_article_message)
-        ]
-    )
-
-    str_output_parser = StrOutputParser()
-
-    return desk_prompt_template | model | str_output_parser
 
 
 def init_llm_pipeline_for_base_classification():
@@ -207,6 +212,32 @@ def init_llm_pipeline_for_classification():
     return parallel_processing_chain
 
 
+def init_llm_pipeline_for_finalization():
+    with open(
+            r'.\prompts\classifications\finalizer.txt',
+            'r',
+            encoding='utf-8') as file:
+        finalization_prompt = file.read()
+
+    finalization_prompt_template = ChatPromptTemplate.from_messages(
+        [
+            ("system", finalization_prompt),
+            ("human", finalization_message)
+        ]
+    )
+
+    str_output_parser = StrOutputParser()
+
+    parallel_processing_chain = RunnableParallel(
+        finalization=finalization_prompt_template | model | str_output_parser,
+        classification=RunnablePassthrough() | get_classification_data,
+        article=RunnablePassthrough() | get_article_data,
+        base_classification=RunnablePassthrough() | get_base_classification_data,
+    )
+
+    return parallel_processing_chain
+
+
 def init_llm_pipeline():
     desks_llm_pipelines: dict[str, Any] = {
         "article": RunnablePassthrough()
@@ -214,6 +245,7 @@ def init_llm_pipeline():
 
     llm_pipeline_for_base_classification = init_llm_pipeline_for_base_classification()
     llm_pipeline_for_classification = init_llm_pipeline_for_classification()
+    llm_pipeline_for_finalization = init_llm_pipeline_for_finalization()
     desks_llm_pipelines['base_classification'] = llm_pipeline_for_base_classification
     parallel_processing_chain = RunnableParallel(
         **desks_llm_pipelines
@@ -225,6 +257,7 @@ def init_llm_pipeline():
     result = (handle_article_received_handler |
               parallel_processing_chain |
               llm_pipeline_for_classification |
+              llm_pipeline_for_finalization |
               handle_article_finished_handler
               )
 
