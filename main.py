@@ -36,7 +36,7 @@ async def start_rabbitmq():
         await channel.set_qos(10)
 
         queue = await channel.declare_queue(
-            "test",
+            "test1",
             durable=True
         )
 
@@ -46,32 +46,32 @@ async def start_rabbitmq():
 
 async def on_message(message: AbstractIncomingMessage):
     try:
-        async with message.process():  # Acknowledge the message upon successful processing
-            message_str = message.body.decode()
+        # async with message.process():  # Acknowledge the message upon successful processing
+        message_str = message.body.decode()
 
-            message_data = json.loads(message_str)
+        message_data = json.loads(message_str)
 
-            data = {
-                **message_data,
-                "article_id": str(uuid.uuid4()),
-                "article_system_id": str(uuid.uuid4()),
-                "status": ArticleStatus.RECEIVED.name
-            }
+        data = {
+            **message_data,
+            "article_id": str(uuid.uuid4()),
+            "article_system_id": str(uuid.uuid4()),
+            "status": ArticleStatus.RECEIVED.name
+        }
 
-            data1 = Article.model_validate({
-                **message_data,
-                "article_id": str(uuid.uuid4()),
-                "article_system_id": str(uuid.uuid4()),
-                "status": ArticleStatus.RECEIVED
-            })
+        data1 = Article.model_validate({
+            **message_data,
+            "article_id": str(uuid.uuid4()),
+            "article_system_id": str(uuid.uuid4()),
+            "status": ArticleStatus.RECEIVED
+        })
 
-            print(f"Received message: {message_str}")
+        print(f"Received message: {message_str}")
 
-            await client['breaking_bed']['articles1'].insert_one(data)
+        await client['breaking_bed']['articles1'].insert_one(data)
 
-            result = await main_processing_chain.ainvoke(data1)
+        result = await main_processing_chain.ainvoke(data1)
 
-            print(f"result: {result}")
+        print(f"result: {result}")
     except Exception as ex:
         logging.getLogger().error(ex)
 
@@ -225,7 +225,8 @@ def init_llm_pipeline():
     )
 
     result = (handle_article_received_handler |
-              RunnablePassthrough(),
+              RunnablePassthrough() |
+              debugger_handler |
               guardrails_pipeline |
               branch)
 
