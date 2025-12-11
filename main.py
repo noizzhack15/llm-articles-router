@@ -98,7 +98,7 @@ finalization_message = """
 async def handle_article_finished(data: dict):
     print(data)
 
-    await update_category(data: dict)
+    await update_category(data)
 
     await asyncio.sleep(1)
 
