@@ -117,6 +117,44 @@ async def handle_article_finished(data: dict):
     return data
 
 
+async def handle_classification_finished(data: dict):
+    print(data)
+
+    await asyncio.sleep(1)
+
+    await client['breaking_bed']['articles'].find_one_and_update(
+        {
+            "article_id": data['article']['article_id'],
+            "system_article_id": data['article']['system_article_id']
+        },
+        {
+            "$set": {
+                "state": ArticleStatus.FINISHED_CLASSIFICATION.name
+            }
+        })
+
+    return data
+
+
+async def handle_finalization_finished(data: dict):
+    print(data)
+
+    await asyncio.sleep(1)
+
+    await client['breaking_bed']['articles'].find_one_and_update(
+        {
+            "article_id": data['article']['article_id'],
+            "system_article_id": data['article']['system_article_id']
+        },
+        {
+            "$set": {
+                "state": ArticleStatus.FINISHED_FINALIZATION.name
+            }
+        })
+
+    return data
+
+
 async def handle_classification_processing_started(data: Any):
     return {
         **data['base_classification'],
@@ -228,6 +266,8 @@ def init_llm_pipeline_for_finalization():
 
     str_output_parser = StrOutputParser()
 
+    finished = RunnableLambda(handle_finalization_finished)
+
     parallel_processing_chain = RunnableParallel(
         finalization=finalization_prompt_template | model | str_output_parser,
         classification=RunnablePassthrough() | get_classification_data,
@@ -235,7 +275,7 @@ def init_llm_pipeline_for_finalization():
         base_classification=RunnablePassthrough() | get_base_classification_data,
     )
 
-    return parallel_processing_chain
+    return parallel_processing_chain | finished
 
 
 def init_llm_pipeline():
@@ -243,13 +283,15 @@ def init_llm_pipeline():
         "article": RunnablePassthrough()
     }
 
+    finished = RunnableLambda(handle_classification_finished)
+
     llm_pipeline_for_base_classification = init_llm_pipeline_for_base_classification()
     llm_pipeline_for_classification = init_llm_pipeline_for_classification()
     llm_pipeline_for_finalization = init_llm_pipeline_for_finalization()
     desks_llm_pipelines['base_classification'] = llm_pipeline_for_base_classification
     parallel_processing_chain = RunnableParallel(
         **desks_llm_pipelines
-    )
+    ) | finished
 
     handle_article_received_handler = RunnableLambda(handle_article_processing_started)
     handle_article_finished_handler = RunnableLambda(handle_article_finished)
