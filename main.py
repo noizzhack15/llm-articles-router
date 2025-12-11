@@ -31,7 +31,7 @@ async def start_rabbitmq():
         channel = await connection.channel()
         await channel.set_qos(10)
         queue = await channel.declare_queue(
-            "breaking_feed_queues",
+            "test",
             durable=True,
 
         )
@@ -166,6 +166,7 @@ async def handle_classification_processing_started(data: Any):
 
 async def get_article(data: Any):
     return data['article']
+
 
 async def update_category(data: Any):
     if data["base_classification"] and data["base_classification"]["classification"]:
